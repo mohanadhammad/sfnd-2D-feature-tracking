@@ -105,8 +105,8 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
                         if (keypoint.response > itr->response)
                         {
                             *itr = keypoint;
+                            break; // TODO: check if it should be moved inside the above if condition
                         }
-                        break; // TODO: check if it should be moved inside the above if condition
                     }
                 }
 

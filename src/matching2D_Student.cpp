@@ -18,9 +18,15 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
     }
     else if (matcherType.compare("MAT_FLANN") == 0)
     {
-        if ((descSource.type() != CV_32F) || (descRef.type() != CV_32F))
-        { // OpenCV bug workaround : convert binary descriptors to floating point due to a bug in current OpenCV implementation
+        if (descSource.type() != CV_32F)
+        {
+            // OpenCV bug workaround : convert binary descriptors to floating point due to a bug in current OpenCV implementation
             descSource.convertTo(descSource, CV_32F);
+        }
+
+        if (descRef.type() != CV_32F)
+        {
+            // OpenCV bug workaround : convert binary descriptors to floating point due to a bug in current OpenCV implementation
             descRef.convertTo(descRef, CV_32F);
         }
 
@@ -40,6 +46,7 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
 
         matcher->knnMatch(descSource, descRef, knnMatches, 2); // Finds the best match for each descriptor in desc1
 
+        // perform distance ratio filtration test
         const float ratioThresh = 0.8F;
         for (size_t i = 0; i != knnMatches.size(); i++)
         {
@@ -106,12 +113,12 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
     const double k{ 0.04 };
 
     cv::Mat dst = cv::Mat::zeros(img.size(), CV_32FC1);
-    cv::cornerHarris(img, dst, blockSize, apertureSize, k, cv::BORDER_DEFAULT);
-
     cv::Mat dstNorm;
-    cv::normalize(dst, dstNorm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat());
-
     cv::Mat dstNormScaled;
+
+    double t = (double)cv::getTickCount();
+    cv::cornerHarris(img, dst, blockSize, apertureSize, k, cv::BORDER_DEFAULT);
+    cv::normalize(dst, dstNorm, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat());
     cv::convertScaleAbs(dstNorm, dstNormScaled);
 
     const int minResponse{ 100 };    
@@ -156,6 +163,8 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
             }  
         }
     }
+    t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+    cout << "Harris detection with n=" << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
     
     if (bVis)
     {
@@ -223,7 +232,7 @@ void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std:
         double t = (double)cv::getTickCount();
         detector->detect(img, keypoints);
         t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << endl;
+        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << " with " << keypoints.size() << " keypoints" << endl;
     }
     else if (detectorType.compare("BRISK") == 0)
     {
@@ -232,17 +241,17 @@ void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std:
         double t = (double)cv::getTickCount();
         detector->detect(img, keypoints);
         t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << endl;
+        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << " with " << keypoints.size() << " keypoints" << endl;
     }
     else if (detectorType.compare("ORB") == 0)
     {
-        int nFeatures = 500;
+        int nFeatures = 30000;
         cv::Ptr<cv::ORB> detector = cv::ORB::create(nFeatures);
         
         double t = (double)cv::getTickCount();
         detector->detect(img, keypoints);
         t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << endl;
+        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << " with " << keypoints.size() << " keypoints" << endl;
     }
     else if (detectorType.compare("AKAZE") == 0)
     {
@@ -251,17 +260,17 @@ void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std:
         double t = (double)cv::getTickCount();
         detector->detect(img, keypoints);
         t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << endl;
+        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << " with " << keypoints.size() << " keypoints" << endl;
     }
     else if (detectorType.compare("SIFT") == 0)
     {
-        int nFeatures = 50;
+        int nFeatures = 10000;
         cv::Ptr<cv::xfeatures2d::SIFT> detector = cv::xfeatures2d::SIFT::create(nFeatures);
 
         double t = (double)cv::getTickCount();
         detector->detect(img, keypoints);
         t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << endl;
+        cout << detectorType << " detection in " << 1000 * t / 1.0 << " ms" << " with " << keypoints.size() << " keypoints" << endl;
     }
     else
     {

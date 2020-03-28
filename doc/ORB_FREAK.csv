@@ -38,3 +38,7 @@ Description Time,36.941,,Matched Keypoints,360
 Image #9,,,,
 Detection Time,12.0429,,Keypoints,7635
 Description Time,37.039,,Matched Keypoints,360
+,,,,
+average det time (ms),13.26587,,,7682.5
+average desc time (ms),39.9338,,,330.8
+Total time (ms),53.19967,,,

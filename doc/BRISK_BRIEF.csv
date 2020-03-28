@@ -1,40 +1,43 @@
-Image #0
+Image #0,,,,
 Detection Time,38.1415,,Keypoints,2757
 Description Time,1.69764,,Matched Keypoints,0
-
-Image #1
+,,,,
+Image #1,,,,
 Detection Time,37.5644,,Keypoints,2777
 Description Time,0.987241,,Matched Keypoints,178
-
-Image #2
+,,,,
+Image #2,,,,
 Detection Time,36.888,,Keypoints,2741
 Description Time,1.00623,,Matched Keypoints,205
-
-Image #3
+,,,,
+Image #3,,,,
 Detection Time,36.8904,,Keypoints,2735
 Description Time,1.00845,,Matched Keypoints,185
-
-Image #4
+,,,,
+Image #4,,,,
 Detection Time,36.9991,,Keypoints,2757
 Description Time,1.09538,,Matched Keypoints,179
-
-Image #5
+,,,,
+Image #5,,,,
 Detection Time,36.4801,,Keypoints,2695
 Description Time,1.02427,,Matched Keypoints,183
-
-Image #6
+,,,,
+Image #6,,,,
 Detection Time,36.4916,,Keypoints,2715
 Description Time,1.13385,,Matched Keypoints,195
-
-Image #7
+,,,,
+Image #7,,,,
 Detection Time,35.8951,,Keypoints,2628
 Description Time,0.999482,,Matched Keypoints,207
-
-Image #8
+,,,,
+Image #8,,,,
 Detection Time,35.2869,,Keypoints,2639
 Description Time,0.975634,,Matched Keypoints,189
-
-Image #9
+,,,,
+Image #9,,,,
 Detection Time,36.6689,,Keypoints,2672
 Description Time,0.971801,,Matched Keypoints,183
-
+,,,,
+Average Det Time,36.7306,,Average Kpts:,2711.6
+Average Desc Time,1.0899978,,Average Matched Kpts,189.333333333333
+Total Exec time (ms),37.8205978,,,

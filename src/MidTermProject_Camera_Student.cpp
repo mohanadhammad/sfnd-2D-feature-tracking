@@ -18,6 +18,13 @@
 
 using namespace std;
 
+std::string g_detType = "";
+int g_kptsNum = 0;
+float g_detTime_ms = 0.0;
+std::string g_descType = "";
+float g_descTime_ms = 0.0;
+int g_matchedKpts = 0;
+
 /* MAIN PROGRAM */
 int main(int argc, const char *argv[])
 {
@@ -41,6 +48,12 @@ int main(int argc, const char *argv[])
     bool bVis = false;            // visualize results
 
     /* MAIN LOOP OVER ALL IMAGES */
+
+    string detectorType = "SIFT"; // -> SHITOMASI, HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
+    string descriptorType = "AKAZE"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
+
+    std::fstream spreadsheet; 
+    spreadsheet.open(detectorType+"_"+descriptorType+".csv", ios::out);
 
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
     {
@@ -70,20 +83,22 @@ int main(int argc, const char *argv[])
             dataBuffer.erase(dataBuffer.begin());
         }
 
-        std::cout << "dataBuffer size is " << dataBuffer.size() << "\n";
+        // std::cout << "dataBuffer size is " << dataBuffer.size() << "\n";
 
         //// EOF STUDENT ASSIGNMENT
-        cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
+        // cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
 
         /* DETECT IMAGE KEYPOINTS */
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        string detectorType = "BRISK";
+        // string detectorType = "ORB";
 
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
         //// -> SHITOMASI, HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
+
+        g_detType = detectorType;
 
         if (detectorType.compare("SHITOMASI") == 0)
         {
@@ -97,6 +112,9 @@ int main(int argc, const char *argv[])
         {
             detKeypointsModern(keypoints, imgGray, detectorType, false);
         }
+
+        g_kptsNum = keypoints.size();
+
         //// EOF STUDENT ASSIGNMENT
 
         //// STUDENT ASSIGNMENT
@@ -140,7 +158,7 @@ int main(int argc, const char *argv[])
 
         // push keypoints and descriptor for current frame to end of data buffer
         (dataBuffer.end() - 1)->keypoints = keypoints;
-        cout << "#2 : DETECT KEYPOINTS done" << endl;
+        // cout << "#2 : DETECT KEYPOINTS done" << endl;
 
         /* EXTRACT KEYPOINT DESCRIPTORS */
 
@@ -149,14 +167,14 @@ int main(int argc, const char *argv[])
         //// -> BRIEF, ORB, FREAK, AKAZE, SIFT
 
         cv::Mat descriptors;
-        string descriptorType = "BRISK"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
+        // string descriptorType = "FREAK"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
         //// EOF STUDENT ASSIGNMENT
 
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
 
-        cout << "#3 : EXTRACT DESCRIPTORS done" << endl;
+        // cout << "#3 : EXTRACT DESCRIPTORS done" << endl;
 
         if (dataBuffer.size() > 1) // wait until at least two images have been processed
         {
@@ -164,9 +182,17 @@ int main(int argc, const char *argv[])
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            string matcherType = "MAT_FLANN";       // MAT_BF, MAT_FLANN
+            string matcherType = "MAT_BF";       // MAT_BF, MAT_FLANN
             string descriptorType = "DES_BINARY";   // DES_BINARY, DES_HOG
-            string selectorType = "SEL_NN";        // SEL_NN, SEL_KNN
+            string selectorType = "SEL_KNN";        // SEL_NN, SEL_KNN
+
+            // Reference: https://answers.opencv.org/question/10046/feature-2d-feature-matching-fails-with-assert-statcpp/
+            // Since SIFT return a detectorType of CV32F (float) you cannot use any Hamming-distance as matcher.
+            // Hamming-distance works only for binary feature-types like ORB, FREAK
+            if (descriptorType.compare("SIFT") || descriptorType.compare("AKAZE"))
+            {
+                descriptorType = "DES_HOG";
+            }
 
             //// STUDENT ASSIGNMENT
             //// TASK MP.5 -> add FLANN matching in file matching2D.cpp
@@ -176,12 +202,14 @@ int main(int argc, const char *argv[])
                              (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
                              matches, descriptorType, matcherType, selectorType);
 
+            g_matchedKpts = matches.size();
+
             //// EOF STUDENT ASSIGNMENT
 
             // store matches in current data frame
             (dataBuffer.end() - 1)->kptMatches = matches;
 
-            cout << "#4 : MATCH KEYPOINT DESCRIPTORS done" << endl;
+            // cout << "#4 : MATCH KEYPOINT DESCRIPTORS done" << endl;
 
             // visualize matches between current and previous image
             bVis = true;
@@ -203,7 +231,13 @@ int main(int argc, const char *argv[])
             bVis = false;
         }
 
+        spreadsheet << "Image #" + std::to_string(imgIndex) << "\n";
+        spreadsheet << "Detection Time," << g_detTime_ms << ",,Keypoints," << g_kptsNum << "\n";
+        spreadsheet << "Description Time," << g_descTime_ms << ",,Matched Keypoints," << g_matchedKpts << "\n\n";
+
     } // eof loop over all images
+
+    spreadsheet.close();
 
     return 0;
 }
